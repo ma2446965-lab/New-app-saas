@@ -10,7 +10,11 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({
+  theme: "dark",
+  toggleTheme: () => {},
+  setTheme: () => {},
+});
 
 const STORAGE_KEY = "fatora-theme";
 
@@ -42,10 +46,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
       {children}
@@ -54,9 +54,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return ctx;
+  return useContext(ThemeContext);
 }

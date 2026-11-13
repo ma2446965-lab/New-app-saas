@@ -12,10 +12,14 @@ import {
   Shield,
   ChevronLeft,
   LogOut,
+  Package,
+  BarChart3,
+  Bot,
+  Settings,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/i18n/useTranslation";
-import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 interface SidebarProps {
   user: any;
@@ -24,11 +28,15 @@ interface SidebarProps {
 }
 
 const items = [
-  { href: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
-  { href: "/dashboard/invoices", label: "فواتيري", icon: FileText },
-  { href: "/dashboard/clients", label: "العملاء", icon: Users },
-  { href: "/dashboard/subscription", label: "الاشتراك", icon: CreditCard },
-  { href: "/dashboard/profile", label: "الملف الشخصي", icon: User },
+  { href: "/dashboard", label: "لوحة التحكم", labelEn: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/invoices", label: "الفواتير", labelEn: "Invoices", icon: FileText },
+  { href: "/dashboard/clients", label: "العملاء", labelEn: "Clients", icon: Users },
+  { href: "/dashboard/products", label: "المنتجات", labelEn: "Products", icon: Package },
+  { href: "/dashboard/inventory", label: "المخزون", labelEn: "Inventory", icon: BarChart3 },
+  { href: "/dashboard/expenses", label: "المصروفات", labelEn: "Expenses", icon: CreditCard },
+  { href: "/dashboard/reports", label: "التقارير", labelEn: "Reports", icon: BarChart3 },
+  { href: "/dashboard/ai-assistant", label: "المساعد الذكي", labelEn: "AI Assistant", icon: Bot },
+  { href: "/dashboard/profile", label: "الملف الشخصي", labelEn: "Profile", icon: User },
 ];
 
 export function Sidebar({ user, onLogout, isAdmin }: SidebarProps) {
@@ -75,7 +83,8 @@ export function Sidebar({ user, onLogout, isAdmin }: SidebarProps) {
               as={Link}
               href={item.href}
             >
-              <Icon className="w-4 h-4" /> {item.label}
+              <Icon className="w-4 h-4" />
+              {lang === "ar" ? item.label : item.labelEn}
             </Button>
           );
         })}
@@ -89,7 +98,18 @@ export function Sidebar({ user, onLogout, isAdmin }: SidebarProps) {
               as={Link}
               href="/admin"
             >
-              <Shield className="w-4 h-4 mr-2" /> لوحة الإدارة
+              <Shield className="w-4 h-4 mr-2" />
+              {lang === "ar" ? "لوحة الإدارة" : "Admin Panel"}
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full justify-start text-sm gap-2 px-3 py-2.5 rounded-xl"
+              as={Link}
+              href="/dashboard/settings"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              {lang === "ar" ? "الإعدادات" : "Settings"}
             </Button>
           </div>
         )}
@@ -97,10 +117,13 @@ export function Sidebar({ user, onLogout, isAdmin }: SidebarProps) {
 
       <div className="p-3 border-t border-border-subtle">
         <Button variant="outline" size="sm" className="w-full justify-start text-sm gap-2 px-3 py-2.5 rounded-xl border border-red-500/20 bg-red-500/5 text-red-400 hover:bg-red-500/10" onClick={onLogout}>
-          <LogOut className="w-4 h-4 mr-2" /> تسجيل الخروج
+          <LogOut className="w-4 h-4 mr-2" />
+          {lang === "ar" ? "تسجيل الخروج" : "Logout"}
         </Button>
         <div className="mt-2 flex items-center justify-center">
-          <LanguageSwitcher />
+          <div className="w-full flex justify-center">
+            <div className="w-48 flex-shrink-0 border border-border-subtle" />
+          </div>
         </div>
       </div>
     </aside>

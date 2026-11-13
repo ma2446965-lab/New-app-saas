@@ -1,81 +1,96 @@
-"use client";
+export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react";
+import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { verifyAdminSessionToken } from "@/lib/auth/admin";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/data-table/DataTable";
+import { Trash2, Edit3, Plus } from "lucide-react";
 
-export default function AdminPlansPage() {
-  const [plans, setPlans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function AdminPlansPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("fatora_admin_session")?.value;
 
-  useEffect(() => {
-    load();
-  }, []);
+  if (!token) redirect("/admin/login");
+  const payload = await verifyAdminSessionToken(token);
+  if (!payload) redirect("/admin/login");
 
-  const load = async () => {
-    const res = await fetch("/api/plans", { credentials: "include" });
-    const json = await res.json();
-    setPlans(json.plans || []);
-    setLoading(false);
-  };
+  const sb = createSupabaseServiceClient();
+  const { data: plans } = await sb
+    .from("subscription_plans")
+    .select("*")
+    .order("sort_order", { ascending: true });
 
-  const update = async (id: string, field: string, value: any) => {
-    const body: any = { id };
-    body[field] = field.endsWith("egp") || field.includes("max") ? Number(value) : value;
-    await fetch("/api/plans", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      credentials: "include",
-    });
-    load();
-  };
-
-  if (loading) return <div className="py-10 text-center">جاري التحميل...</div>;
+  const planList = plans || [];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">إدارة الخطط والأسعار</h1>
-      <p className="text-gray-600">تعديل الخطط يُطبَّق فوراً على جميع المستخدمين.</p>
+    <div className="space-y-8 page-transition animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">إدارة الخطط والأسعار</h1>
+          <p className="text-text-muted">إدارة خطط الاشتراك والأسعار والمزايا</p>
+        </div>
+        <Button className="shadow-glow-purple">
+          <Plus className="w-4 h-4 mr-2" /> خطة جديدة
+        </Button>
+      </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left border-b border-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="pb-3 text-gray-500 font-medium">اسم الخطة</th>
-              <th className="pb-3 text-gray-500 font-medium text-right">سعر شهري</th>
-              <th className="pb-3 text-gray-500 font-medium text-right">سعر سنوي</th>
-              <th className="pb-3 text-gray-500 font-medium">الحد الأقصى للفواتير</th>
-              <th className="pb-3 text-gray-500 font-medium">الحد الأقصى للعملاء</th>
-              <th className="pb-3 text-gray-500 font-medium">مُفعّلة</th>
-              <th className="pb-3 text-gray-500 font-medium text-center">الشائعة</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {plans.map((p) => (
-              <tr key={p.id} className="group">
-                <td className="py-3 font-medium">
-                  <Input value={p.name_ar || p.name} onChange={(e) => update(p.id, "name_ar", e.target.value)} className="w-24 bg-transparent border-0 p-0 focus:ring-0" />
-                </td>
-                <td className="py-3 text-right">
-                  <Input type="number" value={p.price_monthly_egp} onChange={(e) => update(p.id, "price_monthly_egp", e.target.value)} className="w-20 bg-transparent border-0 p-0 focus:ring-0 text-right" />
-                </td>
-                <td className="py-3 text-right">
-                  <Input type="number" value={p.price_yearly_egp} onChange={(e) => update(p.id, "price_yearly_egp", e.target.value)} className="w-20 bg-transparent border-0 p-0 focus:ring-0 text-right" />
-                </td>
-                <td className="py-3">{p.max_invoices ?? "غير محدود"}</td>
-                <td className="py-3">{p.max_clients ?? "غير محدود"}</td>
-                <td className="py-3">
-                  <Button size="sm" variant={p.is_active ? "default" : "outline"} onClick={() => update(p.id, "is_active", !p.is_active)} className="px-2 py-1 text-xs">{p.is_active ? "نعم" : "لا"}</Button>
-                </td>
-                <td className="py-3 text-center">
-                  <Button size="sm" variant={p.is_popular ? "default" : "outline"} onClick={() => update(p.id, "is_popular", !p.is_popular)} className="px-2 py-1 text-xs">{p.is_popular ? "نعم" : "لا"}</Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+        {planList.map((plan) => (
+          <Card key={plan.id} className={`glass-card p-6 rounded-2xl border border-border-subtle hover:bg-bg-card-hover transition-colors ${plan.is_popular ? "ring-1 ring-neon-blue-500" : ""}`}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-text-primary">{plan.name_ar}</h3>
+                <p className="text-sm text-text-muted">{plan.name}</p>
+              </div>
+              {plan.is_popular && (
+                <Badge variant="default" className="text-xs px-2 py-1">
+                  الأكثر شيوعاً
+                </Badge>
+              )}
+            </div>
+            <div className="mb-6">
+              <span className="text-3xl font-bold text-text-primary">
+                {plan.price_monthly_egp}
+              </span>
+              <span className="text-text-muted">جنيه / شهر</span>
+            </div>
+            <p className="text-sm text-text-secondary mb-6">{plan.description_ar || plan.description}</p>
+            <div className="space-y-2 mb-6">
+              {plan.features_ar?.map((f: string, i: number) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-text-secondary">
+                  <span className="w-1.5 h-1.5 rounded-full bg-neon-blue-500" />
+                  {f}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => editPlan(plan)}>
+                <Edit3 className="w-3 h-3 mr-1" /> تعديل
+              </Button>
+              <Button variant="destructive" size="sm" onClick={() => deletePlan(plan.id)}>
+                <Trash2 className="w-3 h-3 mr-1" /> حذف
+              </Button>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );
+
+  function editPlan(plan: any) {
+    // TODO: Open edit modal
+    console.log("Edit plan:", plan);
+  }
+
+  function deletePlan(id: string) {
+    if (confirm("هل أنت متأكد من حذف هذه الخطة؟")) {
+      // TODO: Delete plan
+    }
+  }
 }

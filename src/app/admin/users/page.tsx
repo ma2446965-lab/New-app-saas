@@ -1,99 +1,108 @@
-"use client";
+export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react";
+import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { verifyAdminSessionToken } from "@/lib/auth/admin";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { DataTable } from "@/components/data-table/DataTable";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Trash2, Edit3, Shield, AlertCircle } from "lucide-react";
 
-export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [q, setQ] = useState("");
-  const [loading, setLoading] = useState(true);
+export default async function AdminUsersPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("fatora_admin_session")?.value;
 
-  useEffect(() => {
-    load();
-  }, []);
+  if (!token) redirect("/admin/login");
+  const payload = await verifyAdminSessionToken(token);
+  if (!payload) redirect("/admin/login");
 
-  const load = async () => {
-    const res = await fetch(`/api/users?q=${encodeURIComponent(q)}`, { credentials: "include" });
-    const json = await res.json();
-    setUsers(json.users || []);
-    setLoading(false);
-  };
+  const sb = createSupabaseServiceClient();
+  const { data: users } = await sb
+    .from("profiles")
+    .select("*, companies(name, name_ar)")
+    .order("created_at", { ascending: false });
 
-  const toggle = async (id: string, active: boolean) => {
-    await fetch(`/api/users`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, is_active: active }),
-      credentials: "include",
-    });
-    load();
-  };
+  const userList = users || [];
 
-  const remove = async (id: string) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا الحساب؟")) return;
-    await fetch(`/api/users`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-      credentials: "include",
-    });
-    load();
-  };
-
-  const filtered = users.filter((u) =>
-    (u.full_name || "").includes(q) || (u.email || "").includes(q) || (u.account_id || "").includes(q)
-  );
+  const columns = [
+    { key: "full_name", header: "الاسم", sortable: true },
+    { key: "email", header: "البريد الإلكتروني", sortable: true },
+    { key: "subscription_status", header: "حالة الاشتراك", sortable: true },
+    { key: "subscription_plan", header: "الخطة", sortable: true },
+    { key: "created_at", header: "تاريخ الانضمام", sortable: true },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 page-transition animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">إدارة المستخدمين</h1>
-        <Input
-          placeholder="بحث بالاسم أو البريد أو رقم الحساب..."
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          className="w-full md:w-80"
-        />
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">إدارة المستخدمين</h1>
+          <p className="text-text-muted">إدارة حسابات المستخدمين والاشتراكات</p>
+        </div>
+        <Button className="shadow-glow-purple">
+          <Shield className="w-4 h-4 mr-2" /> مستخدم جديد
+        </Button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left border-b border-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="pb-3 text-gray-500 font-medium">الاسم</th>
-              <th className="pb-3 text-gray-500 font-medium">البريد الإلكتروني</th>
-              <th className="pb-3 text-gray-500 font-medium">رقم الحساب</th>
-              <th className="pb-3 text-gray-500 font-medium">الحالة</th>
-              <th className="pb-3 text-gray-500 font-medium">الاشتراك</th>
-              <th className="pb-3 text-gray-500 font-medium text-center">إجراءات</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
-              <tr><td colSpan={6} className="py-10 text-center text-gray-500">جاري التحميل...</td></tr>
-            ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} className="py-10 text-center text-gray-500">لا توجد نتائج</td></tr>
-            ) : (
-              filtered.map((u) => (
-                <tr key={u.id}>
-                  <td className="py-3 font-medium">{u.full_name || "—"}</td>
-                  <td className="py-3 text-gray-600">{u.email}</td>
-                  <td className="py-3 font-mono text-xs">{u.account_id}</td>
-                  <td className="py-3">
-                    <Button size="sm" variant={u.is_active ? "outline" : "secondary"} onClick={() => toggle(u.id, !u.is_active)}>
-                      {u.is_active ? "نشط" : "موقف"}
-                    </Button>
-                  </td>
-                  <td className="py-3">{u.subscription_status}</td>
-                  <td className="py-3 text-center">
-                    <Button size="sm" variant="destructive" onClick={() => remove(u.id)} className="p-1.5">حذف</Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="glass-card rounded-2xl overflow-hidden border border-border-subtle">
+        {userList.length === 0 ? (
+          <div className="p-12 text-center">
+            <AlertCircle className="w-16 h-16 mx-auto mb-4 opacity-20" />
+            <h3 className="text-lg font-bold text-text-primary">لا توجد مستخدمين</h3>
+            <p className="text-text-muted">لا يوجد مستخدمين مسجلين في النظام</p>
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={userList}
+            actions={[
+              {
+                label: "تعديل",
+                icon: Edit3,
+                variant: "outline",
+                onClick: (row) => {
+                  // Handle edit
+                },
+              },
+              {
+                label: "حذف",
+                icon: Trash2,
+                variant: "destructive",
+                onClick: (row) => {
+                  if (confirm("هل أنت متأكد من حذف هذا المستخدم؟")) {
+                    // Handle delete
+                  }
+                },
+              },
+            ]}
+          />
+        )}
+      </div>
+
+      {/* Subscription status summary */}
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="glass-card p-6 rounded-2xl border border-border-subtle">
+          <h3 className="text-lg font-bold text-text-primary mb-4">توزيع الحالات</h3>
+          <div className="space-y-3">
+            {["active", "trial", "expired", "canceled", "past_due"].map((status) => {
+              const count = userList.filter((u) => u.subscription_status === status).length;
+              const labels: Record<string, string> = {
+                active: "نشط",
+                trial: "تجربة مجانية",
+                expired: "منتهي",
+                canceled: "ملغي",
+                past_due: "متأخر",
+              };
+              return (
+                <div key={status} className="flex items-center justify-between p-3 rounded-xl bg-bg-card-hover border border-border-subtle/50">
+                  <span className="text-sm text-text-secondary">{labels[status]}</span>
+                  <Badge variant="default">{count}</Badge>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

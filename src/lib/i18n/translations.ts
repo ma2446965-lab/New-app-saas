@@ -73,6 +73,23 @@ const en = {
   // Landing
   landingHeroTitle: "الفوترة الإلكترونية السهلة للمشروعات الصغيرة في مصر",
   landingHeroTitleEn: "Simple e-invoicing for Egyptian SMEs",
+  etaCompliant: "متوافق مع مصلحة الضرائب",
+  etaCompliantEn: "ETA compliant",
+  startFreeTrialShort: "ابدأ تجربتك المجانية الآن",
+  startFreeTrialShortEn: "Start your free trial now",
+  joinWaitlist: "انضمام لقائمة الانتظار",
+  joinWaitlistEn: "Join waitlist",
+  mostPopular: "الأكثر شيوعاً",
+  mostPopularEn: "Most popular",
+  startFreeTrial: "ابدأ تجربتك المجانية",
+  startFreeTrialEn: "Start free trial",
+  freeTrialDesc: "أنشئ حسابك واستمتع بتجربة مجانية لمدة 3 أيام — لا تتطلب بطاقة ائتمانية.",
+  freeTrialDescEn: "Create your account and enjoy a 3-day free trial — no credit card required.",
+  freeTrialCta: "بدء التجربة المجانية",
+  freeTrialCtaEn: "Start free trial",
+  loginFailed: "فشل تسجيل الدخول. يرجى التحقق من بياناتك.",
+  loginFailedEn: "Login failed. Please check your credentials.",
+
   landingHeroSub:
     "إ発行 فواتير احترافية متوافقة مع ضريبة القيمة المضافة، وإدارة العملاء، وتتبع المبيعات—كل ذلك من منصة واحدة بالاشتراك الشهري.",
   landingHeroSubEn:

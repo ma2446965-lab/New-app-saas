@@ -12,19 +12,21 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronRight,
   LogIn,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", label: "dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/invoices", label: "myInvoices", icon: FileText },
-  { href: "/dashboard/clients", label: "clients", icon: Users },
-  { href: "/dashboard/subscription", label: "subscription", icon: CreditCard },
-  { href: "/dashboard/profile", label: "profile", icon: User },
+  { href: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
+  { href: "/dashboard/invoices", label: "فواتيري", icon: FileText },
+  { href: "/dashboard/clients", label: "العملاء", icon: Users },
+  { href: "/dashboard/subscription", label: "الاشتراك", icon: CreditCard },
+  { href: "/dashboard/profile", label: "الملف الشخصي", icon: User },
 ];
 
 export function Navbar({ user }: { user: any }) {
@@ -38,15 +40,16 @@ export function Navbar({ user }: { user: any }) {
   };
 
   return (
-    <nav className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-12 shrink-0 items-center gap-1.5 px-4">
+    <nav className="sticky top-0 z-50 border-b glass-surface">
+      <div className="flex h-14 shrink-0 items-center gap-1.5 px-4 md:px-6">
+        {/* Brand */}
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-md bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-neon-blue-600 to-electric-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-glow-blue">
             F
           </div>
           <Link
             href="/"
-            className="text-xl font-bold tracking-tight"
+            className="text-xl font-bold tracking-tight text-text-primary"
             onClick={(e) => {
               if (pathname !== "/") {
                 e.preventDefault();
@@ -59,6 +62,7 @@ export function Navbar({ user }: { user: any }) {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          <ThemeToggle />
           <LanguageSwitcher />
 
           {user ? (
@@ -69,7 +73,7 @@ export function Navbar({ user }: { user: any }) {
                 className="hidden md:block"
                 onClick={handleLogout}
               >
-                <LogOut className="w-3 h-3 mr-1" /> تسجيل الخروج
+                <LogOut className="w-3 h-3 mr-1.5" /> تسجيل الخروج
               </Button>
               <Button
                 asChild
@@ -91,7 +95,7 @@ export function Navbar({ user }: { user: any }) {
                 as={Link}
                 href="/login"
               >
-                <LogIn className="w-3 h-3 mr-1" /> تسجيل الدخول
+                <LogIn className="w-3 h-3 mr-1.5" /> تسجيل الدخول
               </Button>
               <Button size="sm" className="hidden md:block" asChild as={Link} href="/register">
                 إنشاء حساب
@@ -102,9 +106,9 @@ export function Navbar({ user }: { user: any }) {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden border border-border-subtle"
             onClick={() => setOpen((prev) => !prev)}
-            aria-label="Open menu"
+            aria-label="فتح القائمة"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -113,8 +117,8 @@ export function Navbar({ user }: { user: any }) {
 
       {/* Mobile menu */}
       {open && user && (
-        <div className="md:hidden border-b border-border p-4 bg-background">
-          <div className="space-y-2">
+        <div className="md:hidden border-b border-border-subtle p-4 glass-surface z-[60]">
+          <div className="space-y-2 animate-slide-up">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = pathname === item.href;
@@ -123,19 +127,18 @@ export function Navbar({ user }: { user: any }) {
                   key={item.href}
                   asChild
                   variant={active ? "default" : "ghost"}
-                  className="w-full justify-start text-left gap-2 px-2"
+                  className="w-full justify-start text-left gap-2 px-2 py-2.5 rounded-xl"
                   as={Link}
                   href={item.href}
                   onClick={() => setOpen(false)}
                 >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {item.label}
+                  <Icon className="w-4 h-4" /> {item.label}
                 </Button>
               );
             })}
             <Button
               onClick={handleLogout}
-              className="w-full justify-start text-left text-destructive gap-2 px-2"
+              className="w-full justify-start text-left text-red-400 gap-2 px-2 py-2.5 rounded-xl border border-red-500/20 bg-red-500/5"
             >
               <LogOut className="w-4 h-4 mr-2" /> تسجيل الخروج
             </Button>
@@ -145,7 +148,7 @@ export function Navbar({ user }: { user: any }) {
 
       {/* Desktop nav links (auth only) */}
       {!user && (
-        <div className="hidden md:flex items-center gap-2 px-4 py-1">
+        <div className="hidden md:flex items-center gap-2 px-4 py-1.5">
           <Button variant="outline" size="sm" asChild as={Link} href="/login">
             تسجيل الدخول
           </Button>

@@ -1,12 +1,24 @@
-"use strict";
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  hover?: boolean;
+  bordered?: boolean;
+}
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("rounded-xl border border-input bg-background shadow-sm", className)} {...props} />
+const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, hover = true, bordered = true, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      hover ? "glass-card" : "glass-surface",
+      bordered ? "glass-border" : "",
+      "transition-all duration-300",
+      className
+    )}
+    {...props}
+  />
 ));
 Card.displayName = "Card";
 
@@ -18,13 +30,13 @@ CardHeader.displayName = "CardHeader";
 
 interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
 const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(({ className, ...props }, ref) => (
-  <h3 ref={ref} className={cn("text-2xl font-semibold leading-none tracking-tight", className)} {...props} />
+  <h3 ref={ref} className={cn("text-2xl font-bold tracking-tight text-text-primary", className)} {...props} />
 ));
 CardTitle.displayName = "CardTitle";
 
 interface CardDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
 const CardDescription = React.forwardRef<HTMLParagraphElement, CardDescriptionProps>(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+  <p ref={ref} className={cn("text-sm text-text-muted", className)} {...props} />
 ));
 CardDescription.displayName = "CardDescription";
 

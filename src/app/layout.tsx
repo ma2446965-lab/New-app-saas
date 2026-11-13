@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { getServerTranslations, isRTL, getUserLang } from "@/lib/i18n-server";
 import { cookies } from "next/headers";
-
 
 export const metadata: Metadata = {
   title: "فاتورة SaaS - الفوترة الإلكترونية للمشروعات الصغيرة",
@@ -23,11 +23,13 @@ export default async function RootLayout({
   const isRtl = isRTL(lang);
 
   return (
-    <html lang={lang} dir={isRtl ? "rtl" : "ltr"} className="h-full">
-      <body className="antialiased min-h-full bg-gray-50 text-gray-900">
-        <Navbar user={user} />
-        <main className="min-h-full">{children}</main>
-      </body>
-    </html>
+    <ThemeProvider>
+      <html lang={lang} dir={isRtl ? "rtl" : "ltr"} className="h-full">
+        <body className="antialiased min-h-full selection:bg-neon-blue-500 selection:text-white">
+          <Navbar user={user} />
+          <main className="min-h-full relative pb-20">{children}</main>
+        </body>
+      </html>
+    </ThemeProvider>
   );
 }

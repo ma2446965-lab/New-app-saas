@@ -68,13 +68,12 @@ export function SubscriptionManager({ plans, profile, lang }: any) {
       `مدة الاشتراك: ${durationAr}`,
       `تاريخ الطلب: ${dateStr}`,
       "",
-      "يرجى تأكيد الدفع لتفعيل الاشتراك.",
+      `يرجى تأكيد الدفع لتفعيل الاشتراك.`,
     ].join("\n");
 
     const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
 
-    // Record the request in the database (pending)
     supabase
       .from("subscription_requests")
       .insert({
@@ -93,41 +92,59 @@ export function SubscriptionManager({ plans, profile, lang }: any) {
       });
   };
 
-  if (loading) return <div className="py-10 text-center text-gray-500">جاري التحميل...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="skeleton w-24 h-24 rounded-full mx-auto mb-4" />
+        <h2 className="text-text-muted text-center">جاري التحميل...</h2>
+      </div>
+    );
+  }
 
   const isExpired = profile?.subscription_status === "expired" || profile?.subscription_status === "canceled";
   const isActive = profile?.subscription_status === "active";
 
   return (
-    <div className="space-y-6">
-      <div className="p-6 rounded-2xl border bg-white">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div className="space-y-8 page-transition animate-fade-in">
+      {/* Current Plan Card */}
+      <Card className="glass-card p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">الخطة الحالية</h2>
-            <p className="text-gray-600 text-sm">{profile?.email}</p>
+            <h2 className="text-lg font-bold text-text-primary">الخطة الحالية</h2>
+            <p className="text-text-muted text-sm">{profile?.email}</p>
           </div>
-          <Badge variant={isActive ? "default" : trialActive ? "secondary" : "destructive"}>
+          <Badge variant={isActive ? "success" : trialActive ? "info" : "destructive"}>
             {isActive ? "نشط" : trialActive ? "تجربة مجانية" : "منتهي/ملغي"}
           </Badge>
         </div>
 
         {trialActive ? (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-amber-600" />
-              <span className="font-bold text-amber-800">التجربة المجانية</span>
+          <div className="flex items-start gap-4 px-6 py-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-8 animate-pulse-glow">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+              <Clock className="w-6 h-6" />
             </div>
-            <p className="text-amber-700 text-sm mb-3">
-              تبدأ تجربتك المجانية من تاريخ التسجيل وتنتهي تلقائياً بعد 72 ساعة (3 أيام) من الخادم.
-            </p>
-            <div className="text-lg font-mono font-bold text-amber-800">{daysLeft} أيام متبقية</div>
-            <p className="text-xs text-amber-600 mt-2">ينتهي في: {formatDate(profile.trial_ends_at!, "ar")}</p>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-bold text-amber-300">التجربة المجانية</span>
+              </div>
+              <p className="text-amber-200 text-sm mb-3">
+                تبدأ تجربتك المجانية من تاريخ التسجيل وتنتهي تلقائياً بعد 72 ساعة (3 أيام).
+              </p>
+              <div className="text-2xl font-mono font-bold text-amber-300">{daysLeft} أيام متبقية</div>
+              <p className="text-xs text-amber-200 mt-2">ينتهي في: {formatDate(profile.trial_ends_at!, lang)}</p>
+            </div>
           </div>
         ) : null}
 
         {isExpired && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <span className="text-red-700 font-medium">انتهت صلاحية اشتراكك. يرجى اختيار خطة للمتابعة.</span>
+          <div className="flex items-start gap-4 px-6 py-6 rounded-2xl bg-red-500/10 border border-red-500/20 mb-8">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 shrink-0">
+              <Clock className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-red-400 font-medium">انتهت صلاحية اشتراكك</span>
+              <p className="text-red-200 text-sm mt-1">يرجى اختيار خطة للمتابعة.</p>
+            </div>
           </div>
         )}
 
@@ -135,64 +152,76 @@ export function SubscriptionManager({ plans, profile, lang }: any) {
           <Button
             onClick={() => (location.href = "/dashboard/subscription")}
             disabled={isActive || trialActive}
-            className="opacity-100"
+            className="w-full shadow-glow-purple hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] opacity-100"
           >
             {trialActive ? "ترقية الاشتراك" : "اختر خطة اشتراك"}
           </Button>
         </div>
-      </div>
+      </Card>
 
-      <h2 className="text-lg font-bold text-gray-900">اختر خطة اشتراك</h2>
-      <p className="text-gray-600 text-sm mb-6">
-        عند اختيار خطة سيتم توجيهك إلى واتساب لإرسال طلب الاشتراك. يتم تفعيل الاشتراك يدوياً من الإدارة بعد تأكيد الدفع.
-      </p>
+      {/* Plans */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Crown className="w-5 h-5 text-electric-purple-400" />
+            <h2 className="text-lg font-bold text-text-primary">اختر خطة اشتراك</h2>
+          </div>
+          <p className="text-text-muted">عند اختيار خطة سيتم توجيهك إلى واتساب لإرسال طلب الاشتراك.</p>
+        </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        {plans.filter((p: Plan) => p.is_active).map((plan: Plan) => {
-          const popular = plan.is_popular;
-          return (
-            <Card key={plan.id} className={`p-6 rounded-2xl border relative flex flex-col ${popular ? "ring-2 ring-primary bg-amber-50/50" : "border-gray-200"}`}>
-              {popular && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-t-lg">الأكثر شيوعاً</span>
-              )}
-              <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-2xl font-bold text-gray-900">{plan.price_monthly_egp}</span>
-                <span className="text-sm text-gray-500">جنيه / شهر</span>
-              </div>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">{plan.description_ar || plan.description}</p>
-              <ul className="flex-1 space-y-2 text-sm text-gray-600 mb-4">
-                {(plan.features_ar || plan.features || []).map((f: any, i: number) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <span className="w-4 h-4 rounded bg-green-100 flex items-center justify-center text-[10px] text-green-700">✓</span>
-                    {typeof f === "string" ? f : f}
-                  </li>
-                ))}
-              </ul>
-              <div className="space-y-2">
-                <Button
-                  onClick={() => requestViaWhatsApp(plan, "monthly")}
-                  className="w-full"
-                >
-                  <Send className="w-4 h-4 mr-2" /> اشتراك شهري - {plan.price_monthly_egp} ج.م
-                </Button>
-                {plan.price_yearly_egp > 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => requestViaWhatsApp(plan, "yearly")}
-                    className="w-full"
-                  >
-                    <Smartphone className="w-4 h-4 mr-2" /> اشتراك سنوي - {plan.price_yearly_egp} ج.م
-                  </Button>
+        <div className="grid md:grid-cols-3 gap-6">
+          {plans.filter((p: Plan) => p.is_active).map((plan: Plan) => {
+            const popular = plan.is_popular;
+            return (
+              <Card key={plan.id} className={`glass-card p-8 rounded-3xl border relative flex flex-col group ${popular ? "border-neon-blue-500/40 shadow-[0_0_40px_rgba(37,99,235,0.25)] scale-[1.02] z-10" : "border-border-subtle"}`}>
+                {popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="px-3 py-1 rounded-full bg-gradient-to-r from-neon-blue-600 to-electric-purple-600 text-xs font-bold text-white shadow-glow-purple">
+                      الأكثر شيوعاً
+                    </span>
+                  </div>
                 )}
-              </div>
-            </Card>
-          );
-        })}
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className={`text-3xl font-bold ${popular ? "text-neon-blue-400" : "text-text-primary"}`}>{plan.price_monthly_egp}</span>
+                  <span className="text-sm text-text-muted">جنيه / شهر</span>
+                </div>
+                <p className="text-sm text-text-muted mb-6 line-clamp-2">{plan.description_ar || plan.description}</p>
+                <ul className="flex-1 space-y-3 text-sm text-text-muted mb-6">
+                  {(plan.features_ar || plan.features || []).map((f: any, i: number) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <span className="text-[10px]">✓</span>
+                      </div>
+                      <span>{typeof f === "string" ? f : f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => requestViaWhatsApp(plan, "monthly")}
+                    className="w-full py-3 rounded-xl shadow-glow-purple hover:shadow-[0_0_25px_rgba(168,85,247,0.4)] text-lg font-semibold"
+                  >
+                    <Send className="w-4 h-4 mr-2" /> اشتراك شهري - {plan.price_monthly_egp} ج.م
+                  </Button>
+                  {plan.price_yearly_egp > 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => requestViaWhatsApp(plan, "yearly")}
+                      className="w-full py-3 rounded-xl text-lg font-semibold glass-card"
+                    >
+                      <Smartphone className="w-4 h-4 mr-2" /> اشتراك سنوي - {plan.price_yearly_egp} ج.م
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       {toast && (
-        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-lg text-white font-medium shadow-lg z-50 flex items-center gap-2 ${toast.type === "success" ? "bg-green-600" : "bg-red-600"}`}>
-          <Send className="w-4 h-4" /> {toast.msg}
+        <div className={`fixed bottom-4 right-4 px-5 py-3.5 rounded-2xl text-white font-medium shadow-[0_0_30px_rgba(0,0,0,0.4)] z-50 animate-slide-up ${toast.type === "success" ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : "bg-gradient-to-r from-red-500 to-red-600"}`}>
+          <Send className="w-4 h-4 mr-2" /> {toast.msg}
         </div>
       )}
     </div>

@@ -21,9 +21,12 @@ export default async function InvoicesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 page-transition animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">الفواتير</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">الفواتير</h1>
+          <p className="text-text-muted">إدارة فواتيرك ومتابعة حالتها</p>
+        </div>
       </div>
       <InvoiceManager
         invoices={(invoices.data || []).map((i: any) => ({ ...i, total: Number(i.total || 0) }))}

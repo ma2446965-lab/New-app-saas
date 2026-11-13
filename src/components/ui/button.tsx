@@ -1,10 +1,9 @@
-"use strict";
+"use client";
 
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 
-// Lightweight cva replacement to avoid extra dependency
 function cva(base: string, opts: { variants?: Record<string, Record<string, string>>; defaultVariants?: Record<string, string> } = {}) {
   return (props: Record<string, any> = {}) => {
     let cls = base;
@@ -19,16 +18,22 @@ function cva(base: string, opts: { variants?: Record<string, Record<string, stri
 }
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-medium text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center rounded-medium text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        default:
+          "bg-gradient-to-br from-neon-blue-600 to-electric-purple-600 text-white hover:from-neon-blue-500 hover:to-electric-purple-500 shadow-glow-purple hover:shadow-[0_0_30px_rgba(168,85,247,0.5)]",
+        destructive:
+          "bg-red-600 text-white hover:bg-red-700 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]",
+        outline:
+          "border border-border-subtle bg-transparent hover:bg-bg-card-hover hover:text-text-primary",
+        secondary:
+          "bg-bg-card text-text-primary hover:bg-bg-card-hover shadow-glow-card",
+        ghost:
+          "hover:bg-bg-card-hover hover:text-text-primary",
+        link:
+          "text-neon-blue-600 hover:text-neon-blue-400 underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
     if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, next);
+      try { localStorage.setItem(STORAGE_KEY, next); } catch {}
       document.documentElement.setAttribute("data-theme", next);
       document.body.className = next;
     }
@@ -29,17 +29,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = useCallback(() => {
     setTheme(theme === "dark" ? "light" : "dark");
-  }, [theme, setTheme]);
+  }, [theme]);
 
   useEffect(() => {
     setMounted(true);
-    // Read saved theme or system preference
-    const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial: Theme = saved || (systemPrefersDark ? "dark" : "dark"); // Default to dark
-    setThemeState(initial);
-    document.documentElement.setAttribute("data-theme", initial);
-    document.body.className = initial;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
+      const initial: Theme = saved || "dark";
+      setThemeState(initial);
+      document.documentElement.setAttribute("data-theme", initial);
+      document.body.className = initial;
+    } catch {}
   }, []);
 
   if (!mounted) {
